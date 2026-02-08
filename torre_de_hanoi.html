@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torre de Hanoi - Jogo Interativo</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background: #2d1810;
+            background-image: 
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,.1) 2px, rgba(0,0,0,.1) 4px),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.1) 2px, rgba(0,0,0,.1) 4px);
+            min-height: 100vh;
+            padding: 20px;
+            color: #1a1a1a;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #d4a574;
+            border: 6px solid #000;
+            border-style: dashed;
+            box-shadow: 
+                0 0 0 3px #8b5a2b,
+                8px 8px 0 0 rgba(0,0,0,0.5),
+                inset 0 0 0 3px #e8c9a1;
+        }
+
+        .header {
+            background: #8b5a2b;
+            background-image: 
+                repeating-linear-gradient(90deg, #8b5a2b 0px, #654321 2px, #8b5a2b 4px),
+                linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.2) 100%);
+            padding: 30px;
+            text-align: center;
+            color: #ffd700;
+            border-bottom: 6px solid #000;
+            border-bottom-style: dashed;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #d4a574;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 15px;
+            text-shadow: 
+                3px 3px 0 #000,
+                -1px -1px 0 #000,
+                1px -1px 0 #000,
+                -1px 1px 0 #000,
+                1px 1px 0 #000;
+            letter-spacing: 2px;
+        }
+
+        .header p {
+            font-size: 0.6em;
+            color: #fff8dc;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+            background: #a0724b;
+            background-image: 
+                repeating-linear-gradient(90deg, transparent 0px, rgba(0,0,0,0.1) 1px, transparent 2px),
+                repeating-linear-gradient(0deg, transparent 0px, rgba(0,0,0,0.1) 1px, transparent 2px);
+            background-size: 8px 8px;
+            flex-wrap: wrap;
+            border-bottom: 4px dashed #000;
+        }
+
+        .info-box {
+            background: #fff8dc;
+            padding: 15px 25px;
+            border: 4px solid #000;
+            margin: 5px;
+            min-width: 150px;
+            text-align: center;
+            box-shadow: 
+                4px 4px 0 0 rgba(0,0,0,0.5),
+                inset 2px 2px 0 0 rgba(255,255,255,0.3);
+        }
+
+        .info-box .label {
+            font-size: 0.5em;
+            color: #654321;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .info-box .value {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #d32f2f;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+        }
+
+        .game-area {
+            padding: 40px 20px;
+            min-height: 400px;
+            background: #c19a6b;
+            background-image: 
+                repeating-linear-gradient(0deg, transparent, transparent 4px, rgba(139,90,43,0.1) 4px, rgba(139,90,43,0.1) 8px),
+                repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(139,90,43,0.1) 4px, rgba(139,90,43,0.1) 8px);
+        }
+
+        .towers-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            height: 350px;
+            margin-bottom: 30px;
+            position: relative;
+            background: rgba(139,90,43,0.2);
+            padding: 20px 10px;
+            border: 4px dashed #000;
+        }
+
+        .tower {
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            position: relative;
+            width: 30%;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .tower:hover {
+            transform: scale(1.02);
+        }
+
+        .tower.selected {
+            background: repeating-linear-gradient(
+                45deg,
+                rgba(255,215,0,0.2),
+                rgba(255,215,0,0.2) 10px,
+                transparent 10px,
+                transparent 20px
+            );
+            outline: 3px dashed #ffd700;
+            outline-offset: -8px;
+        }
+
+        .tower-pole {
+            width: 12px;
+            height: 300px;
+            background: #654321;
+            background-image: 
+                repeating-linear-gradient(0deg, 
+                    #654321 0px, 
+                    #8b5a2b 2px, 
+                    #654321 4px);
+            position: absolute;
+            bottom: 0;
+            border: 3px solid #000;
+            box-shadow: 
+                inset 2px 2px 0 rgba(0,0,0,0.5),
+                inset -2px -2px 0 rgba(139,90,43,0.5);
+        }
+
+        .tower-base {
+            display: none;
+        }
+
+        .tower-label {
+            position: absolute;
+            bottom: -30px;
+            font-weight: bold;
+            font-size: 0.8em;
+            color: #ffd700;
+            text-shadow: 
+                2px 2px 0 #000,
+                -1px -1px 0 #000,
+                1px -1px 0 #000,
+                -1px 1px 0 #000;
+            letter-spacing: 2px;
+        }
+
+        .disk {
+            height: 28px;
+            margin: 3px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: bold;
+            font-size: 0.7em;
+            border: 4px solid #000;
+            position: relative;
+            z-index: 10;
+            transition: all 0.2s;
+            cursor: grab;
+            text-shadow: 
+                1px 1px 0 #000,
+                -1px -1px 0 #000,
+                1px -1px 0 #000,
+                -1px 1px 0 #000;
+            box-shadow: 
+                4px 4px 0 rgba(0,0,0,0.6),
+                inset 0 -4px 0 rgba(0,0,0,0.3),
+                inset 0 4px 0 rgba(255,255,255,0.3);
+        }
+
+        .disk::before {
+            content: '';
+            position: absolute;
+            top: 6px;
+            left: 8px;
+            right: 8px;
+            height: 4px;
+            background: rgba(255,255,255,0.4);
+        }
+
+        .disk::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            right: 4px;
+            bottom: 4px;
+            border: 2px dashed rgba(0,0,0,0.2);
+        }
+
+        .disk:active {
+            cursor: grabbing;
+        }
+
+        .disk.moving {
+            transform: translateY(-100px);
+            z-index: 100;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 30px 0;
+        }
+
+        .btn {
+            padding: 15px 25px;
+            border: 4px solid #000;
+            font-size: 0.7em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.1s;
+            color: #fff;
+            font-family: 'Press Start 2P', cursive;
+            text-shadow: 2px 2px 0 #000;
+            box-shadow: 
+                4px 4px 0 0 rgba(0,0,0,0.5),
+                inset 2px 2px 0 rgba(255,255,255,0.2);
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 
+                2px 2px 0 0 rgba(0,0,0,0.5),
+                inset 2px 2px 0 rgba(255,255,255,0.2);
+        }
+
+        .btn:active {
+            transform: translate(4px, 4px);
+            box-shadow: none;
+        }
+
+        .btn-primary {
+            background: #d32f2f;
+            background-image: repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 4px);
+        }
+
+        .btn-secondary {
+            background: #1976d2;
+            background-image: repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 4px);
+        }
+
+        .btn-success {
+            background: #388e3c;
+            background-image: repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 4px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            filter: grayscale(1);
+        }
+
+        .difficulty-selector {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(139,90,43,0.3);
+            border: 3px dashed #000;
+        }
+
+        .difficulty-selector label {
+            font-size: 0.7em;
+            font-weight: bold;
+            color: #2d1810;
+            margin-right: 10px;
+            text-shadow: 1px 1px 0 rgba(255,255,255,0.3);
+        }
+
+        .difficulty-selector select {
+            padding: 10px 15px;
+            border: 4px solid #000;
+            font-size: 0.8em;
+            cursor: pointer;
+            background: #fff8dc;
+            font-family: 'Press Start 2P', cursive;
+            box-shadow: 
+                4px 4px 0 rgba(0,0,0,0.3),
+                inset 2px 2px 0 rgba(255,255,255,0.5);
+        }
+
+        .message {
+            text-align: center;
+            padding: 15px;
+            margin: 20px;
+            border: 4px solid #000;
+            font-size: 0.7em;
+            font-weight: bold;
+            display: none;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .message.success {
+            background: #a5d6a7;
+            color: #1b5e20;
+            border-style: dashed;
+        }
+
+        .message.error {
+            background: #ef9a9a;
+            color: #b71c1c;
+            border-style: dashed;
+        }
+
+        .message.info {
+            background: #90caf9;
+            color: #0d47a1;
+            border-style: dashed;
+        }
+
+        .rules {
+            background: #a0724b;
+            padding: 25px;
+            margin: 20px;
+            border: 4px dashed #000;
+            box-shadow: 
+                inset 0 0 0 3px #654321,
+                4px 4px 0 rgba(0,0,0,0.3);
+        }
+
+        .rules h3 {
+            color: #ffd700;
+            margin-bottom: 20px;
+            font-size: 1em;
+            text-shadow: 2px 2px 0 #000;
+            letter-spacing: 2px;
+        }
+
+        .rules ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .rules li {
+            padding: 12px 0;
+            font-size: 0.6em;
+            line-height: 1.8;
+            color: #fff8dc;
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        .rules li:before {
+            content: "▶ ";
+            color: #ffd700;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px;
+        }
+
+        .stat-card {
+            background: #8b5a2b;
+            background-image: 
+                repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(0,0,0,0.1) 4px, rgba(0,0,0,0.1) 8px);
+            padding: 20px;
+            border: 4px dashed #000;
+            text-align: center;
+            box-shadow: 
+                4px 4px 0 rgba(0,0,0,0.5),
+                inset 0 0 0 2px #654321;
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.5em;
+            color: #fff8dc;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            background-image: 
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #d4a574;
+            padding: 40px;
+            border: 6px dashed #000;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 
+                0 0 0 4px #8b5a2b,
+                8px 8px 0 rgba(0,0,0,0.7),
+                inset 0 0 0 3px #e8c9a1;
+            animation: modalBounce 0.5s ease;
+        }
+
+        @keyframes modalBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .modal-content h2 {
+            color: #ffd700;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            text-shadow: 3px 3px 0 #000;
+            letter-spacing: 2px;
+        }
+
+        .modal-content p {
+            font-size: 0.7em;
+            margin: 15px 0;
+            line-height: 1.8;
+            color: #2d1810;
+            text-shadow: 1px 1px 0 rgba(255,255,255,0.3);
+        }
+
+        .confetti {
+            font-size: 3em;
+            margin: 20px 0;
+            animation: confettiSpin 2s infinite;
+        }
+
+        @keyframes confettiSpin {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg); }
+            75% { transform: rotate(10deg); }
+        }
+
+        @media (max-width: 1024px) {
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .header p {
+                font-size: 0.55em;
+            }
+
+            .towers-container {
+                height: 320px;
+                padding: 15px 5px;
+            }
+
+            .tower-pole {
+                height: 280px;
+            }
+
+            .info-box {
+                padding: 12px 20px;
+                min-width: 130px;
+            }
+
+            .info-box .label {
+                font-size: 0.45em;
+            }
+
+            .info-box .value {
+                font-size: 1.2em;
+            }
+
+            .btn {
+                font-size: 0.65em;
+                padding: 12px 20px;
+            }
+
+            .rules li {
+                font-size: 0.55em;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                border-width: 4px;
+            }
+
+            .header {
+                padding: 20px 15px;
+            }
+
+            .header h1 {
+                font-size: 1.2em;
+                letter-spacing: 1px;
+            }
+
+            .header p {
+                font-size: 0.45em;
+            }
+
+            .game-info {
+                padding: 15px 10px;
+                gap: 8px;
+            }
+
+            .info-box {
+                padding: 10px 15px;
+                min-width: 100px;
+                margin: 3px;
+            }
+
+            .info-box .label {
+                font-size: 0.4em;
+            }
+
+            .info-box .value {
+                font-size: 1em;
+            }
+
+            .game-area {
+                padding: 25px 10px;
+            }
+            
+            .towers-container {
+                height: 280px;
+                padding: 10px 5px;
+            }
+
+            .tower-pole {
+                height: 250px;
+                width: 10px;
+            }
+
+            .tower-label {
+                font-size: 0.65em;
+                bottom: -35px;
+            }
+
+            .disk {
+                height: 22px;
+                font-size: 0.55em;
+                margin: 2px 0;
+                border-width: 3px;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+                margin: 20px 0;
+            }
+
+            .btn {
+                width: 90%;
+                max-width: 300px;
+                font-size: 0.55em;
+                padding: 12px 15px;
+            }
+
+            .difficulty-selector {
+                padding: 12px;
+                margin: 15px 10px;
+            }
+
+            .difficulty-selector label {
+                font-size: 0.55em;
+                display: block;
+                margin-bottom: 10px;
+            }
+
+            .difficulty-selector select {
+                font-size: 0.6em;
+                padding: 8px 12px;
+                width: 100%;
+                max-width: 250px;
+            }
+
+            .message {
+                font-size: 0.55em;
+                padding: 12px;
+                margin: 15px 10px;
+            }
+
+            .rules {
+                padding: 20px 15px;
+                margin: 15px 10px;
+            }
+
+            .rules h3 {
+                font-size: 0.8em;
+                margin-bottom: 15px;
+            }
+
+            .rules li {
+                font-size: 0.5em;
+                padding: 8px 0;
+                line-height: 1.6;
+            }
+
+            .stats {
+                gap: 10px;
+                margin: 15px 10px;
+                grid-template-columns: 1fr;
+            }
+
+            .stat-card {
+                padding: 15px;
+            }
+
+            .stat-card .stat-label {
+                font-size: 0.45em;
+            }
+
+            .stat-card .stat-value {
+                font-size: 1.1em;
+            }
+
+            .modal-content {
+                padding: 25px 20px;
+                margin: 15px;
+                max-width: 90%;
+            }
+
+            .modal-content h2 {
+                font-size: 1.1em;
+            }
+
+            .modal-content p {
+                font-size: 0.55em;
+                line-height: 1.6;
+            }
+
+            .confetti {
+                font-size: 2em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 0.9em;
+            }
+
+            .header p {
+                font-size: 0.4em;
+            }
+
+            .info-box {
+                padding: 8px 12px;
+                min-width: 85px;
+            }
+
+            .info-box .label {
+                font-size: 0.35em;
+            }
+
+            .info-box .value {
+                font-size: 0.9em;
+            }
+
+            .towers-container {
+                height: 240px;
+            }
+
+            .tower-pole {
+                height: 210px;
+                width: 8px;
+                border-width: 2px;
+            }
+
+            .tower-label {
+                font-size: 0.55em;
+                bottom: -30px;
+            }
+
+            .disk {
+                height: 20px;
+                font-size: 0.5em;
+                border-width: 2px;
+            }
+
+            .btn {
+                font-size: 0.5em;
+                padding: 10px 12px;
+            }
+
+            .difficulty-selector label {
+                font-size: 0.5em;
+            }
+
+            .difficulty-selector select {
+                font-size: 0.55em;
+            }
+
+            .rules h3 {
+                font-size: 0.7em;
+            }
+
+            .rules li {
+                font-size: 0.45em;
+            }
+
+            .modal-content {
+                padding: 20px 15px;
+            }
+
+            .modal-content h2 {
+                font-size: 0.9em;
+            }
+
+            .modal-content p {
+                font-size: 0.5em;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .header h1 {
+                font-size: 0.75em;
+            }
+
+            .towers-container {
+                height: 200px;
+            }
+
+            .tower-pole {
+                height: 180px;
+            }
+
+            .disk {
+                height: 18px;
+                font-size: 0.45em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Torre de Hanoi</h1>
+            <p>Um clássico quebra-cabeça matemático</p>
+        </div>
+
+        <div class="game-info">
+            <div class="info-box">
+                <div class="label">Movimentos</div>
+                <div class="value" id="moves">0</div>
+            </div>
+            <div class="info-box">
+                <div class="label">Mínimo</div>
+                <div class="value" id="minMoves">7</div>
+            </div>
+            <div class="info-box">
+                <div class="label">Tempo</div>
+                <div class="value" id="timer">0:00</div>
+            </div>
+        </div>
+
+        <div class="difficulty-selector">
+            <label for="disks">Número de Discos:</label>
+            <select id="disks" onchange="resetGame()">
+                <option value="3">3 (Fácil)</option>
+                <option value="4" selected>4 (Médio)</option>
+                <option value="5">5 (Difícil)</option>
+                <option value="6">6 (Expert)</option>
+                <option value="7">7 (Mestre)</option>
+                <option value="8">8 (Impossível)</option>
+            </select>
+        </div>
+
+        <div class="message" id="message"></div>
+
+        <div class="game-area">
+            <div class="towers-container" id="towersContainer">
+                <div class="tower" data-tower="0" onclick="selectTower(0)">
+                    <div class="tower-pole"></div>
+                    <div class="tower-base"></div>
+                    <div class="tower-label">Torre A</div>
+                </div>
+                <div class="tower" data-tower="1" onclick="selectTower(1)">
+                    <div class="tower-pole"></div>
+                    <div class="tower-base"></div>
+                    <div class="tower-label">Torre B</div>
+                </div>
+                <div class="tower" data-tower="2" onclick="selectTower(2)">
+                    <div class="tower-pole"></div>
+                    <div class="tower-base"></div>
+                    <div class="tower-label">Torre C</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="resetGame()">Reiniciar</button>
+            <button class="btn btn-secondary" onclick="undoMove()" id="undoBtn" disabled>Desfazer</button>
+            <button class="btn btn-success" onclick="showSolution()" id="solutionBtn">Ver Solução</button>
+        </div>
+
+        <div class="rules">
+            <h3>Regras do Jogo</h3>
+            <ul>
+                <li>O objetivo é mover todos os discos da Torre A para a Torre C</li>
+                <li>Você pode mover apenas um disco por vez</li>
+                <li>Um disco maior nunca pode ficar em cima de um disco menor</li>
+                <li>Você pode usar a Torre B como auxiliar</li>
+                <li>Tente completar no número mínimo de movimentos: 2ⁿ - 1 (onde n é o número de discos)</li>
+            </ul>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-label">Jogos Completados</div>
+                <div class="stat-value" id="gamesCompleted">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Melhor Tempo</div>
+                <div class="stat-value" id="bestTime">--</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Recorde de Movimentos</div>
+                <div class="stat-value" id="bestMoves">--</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="victoryModal">
+        <div class="modal-content">
+            <div class="confetti"></div>
+            <h2>Parabéns!</h2>
+            <p>Você completou a Torre de Hanoi!</p>
+            <p><strong>Movimentos:</strong> <span id="finalMoves"></span></p>
+            <p><strong>Tempo:</strong> <span id="finalTime"></span></p>
+            <p id="efficiencyMessage"></p>
+            <button class="btn btn-primary" onclick="closeModal()" style="margin-top: 20px;">Jogar Novamente</button>
+        </div>
+    </div>
+
+    <script>
+        const colors = [
+            '#d32f2f',  // Vermelho
+            '#1976d2',  // Azul
+            '#388e3c',  // Verde
+            '#f57c00',  // Laranja
+            '#7b1fa2',  // Roxo
+            '#c2185b',  // Rosa
+            '#0097a7',  // Ciano
+            '#fbc02d'   // Amarelo
+        ];
+
+        let towers = [[], [], []];
+        let selectedTower = null;
+        let moveCount = 0;
+        let moveHistory = [];
+        let timerInterval = null;
+        let seconds = 0;
+        let isGameActive = false;
+        let gamesCompleted = parseInt(localStorage.getItem('gamesCompleted') || '0');
+        let bestTime = localStorage.getItem('bestTime') || null;
+        let bestMoves = localStorage.getItem('bestMoves') || null;
+
+        function initGame() {
+            const numDisks = parseInt(document.getElementById('disks').value);
+            towers = [[], [], []];
+            
+            for (let i = numDisks; i >= 1; i--) {
+                towers[0].push(i);
+            }
+            
+            moveCount = 0;
+            moveHistory = [];
+            selectedTower = null;
+            isGameActive = false;
+            seconds = 0;
+            
+            updateDisplay();
+            updateStats();
+            clearMessage();
+            
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            
+            document.getElementById('moves').textContent = '0';
+            document.getElementById('timer').textContent = '0:00';
+            document.getElementById('minMoves').textContent = Math.pow(2, numDisks) - 1;
+            document.getElementById('undoBtn').disabled = true;
+        }
+
+        function updateDisplay() {
+            const container = document.getElementById('towersContainer');
+            const towerElements = container.querySelectorAll('.tower');
+            
+            towerElements.forEach((towerEl, towerIndex) => {
+                towerEl.classList.remove('selected');
+                if (selectedTower === towerIndex) {
+                    towerEl.classList.add('selected');
+                }
+                
+                const disks = towers[towerIndex];
+                
+                // Limpar discos antigos primeiro
+                const existingDisks = Array.from(towerEl.querySelectorAll('.disk'));
+                existingDisks.forEach(d => d.remove());
+                
+                // Adicionar discos de baixo para cima (do maior pro menor)
+                disks.forEach((diskSize, diskIndex) => {
+                    const disk = document.createElement('div');
+                    disk.className = 'disk';
+                    
+                    // Responsive disk width calculation
+                    const baseWidth = window.innerWidth < 768 ? 25 : 30;
+                    const extraWidth = window.innerWidth < 768 ? 50 : 60;
+                    disk.style.width = (diskSize * baseWidth + extraWidth) + 'px';
+                    disk.style.maxWidth = '95%';
+                    
+                    disk.style.background = colors[diskSize - 1];
+                    disk.style.backgroundImage = 'repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 4px)';
+                    disk.textContent = diskSize;
+                    
+                    // Z-index crescente: discos do topo têm maior z-index
+                    disk.style.zIndex = 10 + diskIndex;
+                    
+                    // Inserir no final (em cima dos outros)
+                    towerEl.appendChild(disk);
+                });
+            });
+        }
+
+        function selectTower(towerIndex) {
+            if (!isGameActive) {
+                startTimer();
+                isGameActive = true;
+            }
+
+            if (selectedTower === null) {
+                if (towers[towerIndex].length > 0) {
+                    selectedTower = towerIndex;
+                    showMessage('Torre selecionada! Clique na torre de destino.', 'info');
+                    updateDisplay();
+                }
+            } else {
+                if (selectedTower === towerIndex) {
+                    selectedTower = null;
+                    clearMessage();
+                    updateDisplay();
+                } else {
+                    moveDisk(selectedTower, towerIndex);
+                }
+            }
+        }
+
+        function moveDisk(fromTower, toTower) {
+            const fromDisks = towers[fromTower];
+            const toDisks = towers[toTower];
+            
+            if (fromDisks.length === 0) {
+                showMessage('Esta torre está vazia!', 'error');
+                return;
+            }
+            
+            const disk = fromDisks[fromDisks.length - 1];
+            
+            if (toDisks.length > 0 && toDisks[toDisks.length - 1] < disk) {
+                showMessage('Não pode colocar um disco maior sobre um menor!', 'error');
+                return;
+            }
+            
+            fromDisks.pop();
+            toDisks.push(disk);
+            
+            moveCount++;
+            moveHistory.push({from: fromTower, to: toTower});
+            
+            document.getElementById('moves').textContent = moveCount;
+            document.getElementById('undoBtn').disabled = false;
+            
+            selectedTower = null;
+            clearMessage();
+            updateDisplay();
+            
+            checkVictory();
+        }
+
+        function undoMove() {
+            if (moveHistory.length === 0) return;
+            
+            const lastMove = moveHistory.pop();
+            const disk = towers[lastMove.to].pop();
+            towers[lastMove.from].push(disk);
+            
+            moveCount--;
+            document.getElementById('moves').textContent = moveCount;
+            
+            if (moveHistory.length === 0) {
+                document.getElementById('undoBtn').disabled = true;
+            }
+            
+            selectedTower = null;
+            updateDisplay();
+        }
+
+        function checkVictory() {
+            const numDisks = parseInt(document.getElementById('disks').value);
+            
+            if (towers[2].length === numDisks) {
+                stopTimer();
+                showVictoryModal();
+                
+                gamesCompleted++;
+                localStorage.setItem('gamesCompleted', gamesCompleted);
+                
+                if (!bestMoves || moveCount < parseInt(bestMoves)) {
+                    bestMoves = moveCount.toString();
+                    localStorage.setItem('bestMoves', bestMoves);
+                }
+                
+                const timeStr = document.getElementById('timer').textContent;
+                if (!bestTime || seconds < parseTimeToSeconds(bestTime)) {
+                    bestTime = timeStr;
+                    localStorage.setItem('bestTime', bestTime);
+                }
+                
+                updateStats();
+            }
+        }
+
+        function parseTimeToSeconds(timeStr) {
+            const parts = timeStr.split(':');
+            return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+        }
+
+        function showVictoryModal() {
+            const modal = document.getElementById('victoryModal');
+            const minMoves = Math.pow(2, parseInt(document.getElementById('disks').value)) - 1;
+            const efficiency = (minMoves / moveCount * 100).toFixed(1);
+            
+            document.getElementById('finalMoves').textContent = moveCount;
+            document.getElementById('finalTime').textContent = document.getElementById('timer').textContent;
+            
+            let effMsg = '';
+            if (moveCount === minMoves) {
+                effMsg = '🏆 PERFEITO! Você completou no número mínimo de movimentos!';
+            } else if (efficiency >= 80) {
+                effMsg = `✨ Excelente! Eficiência: ${efficiency}%`;
+            } else if (efficiency >= 60) {
+                effMsg = `👍 Muito bom! Eficiência: ${efficiency}%`;
+            } else {
+                effMsg = `💪 Continue praticando! Eficiência: ${efficiency}%`;
+            }
+            
+            document.getElementById('efficiencyMessage').textContent = effMsg;
+            modal.classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('victoryModal').classList.remove('show');
+            resetGame();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                seconds++;
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                document.getElementById('timer').textContent = 
+                    `${mins}:${secs.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function resetGame() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            initGame();
+        }
+
+        function showMessage(text, type) {
+            const message = document.getElementById('message');
+            message.textContent = text;
+            message.className = `message ${type} show`;
+            
+            setTimeout(() => {
+                message.classList.remove('show');
+            }, 3000);
+        }
+
+        function clearMessage() {
+            const message = document.getElementById('message');
+            message.classList.remove('show');
+        }
+
+        function updateStats() {
+            document.getElementById('gamesCompleted').textContent = gamesCompleted;
+            document.getElementById('bestTime').textContent = bestTime || '--';
+            document.getElementById('bestMoves').textContent = bestMoves || '--';
+        }
+
+        function showSolution() {
+            const numDisks = parseInt(document.getElementById('disks').value);
+            const minMoves = Math.pow(2, numDisks) - 1;
+            
+            alert(`💡 Solução para ${numDisks} discos:\n\n` +
+                  `Número mínimo de movimentos: ${minMoves}\n\n` +
+                  `Dica: Use a recursão!\n` +
+                  `1. Mova n-1 discos da origem para o auxiliar\n` +
+                  `2. Mova o maior disco para o destino\n` +
+                  `3. Mova n-1 discos do auxiliar para o destino\n\n` +
+                  `Fórmula: 2^n - 1 movimentos`);
+        }
+
+        // Inicializar o jogo
+        initGame();
+
+        // Atualizar discos ao redimensionar janela
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                updateDisplay();
+            }, 250);
+        });
+
+        // Atalhos de teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '1') selectTower(0);
+            if (e.key === '2') selectTower(1);
+            if (e.key === '3') selectTower(2);
+            if (e.key === 'z' && e.ctrlKey) undoMove();
+            if (e.key === 'r') resetGame();
+        });
+    </script>
+</body>
+</html>
